@@ -5,18 +5,44 @@ fn main() {
 	shell_loop();
 }
 
+fn builtin_exit() -> i8 {
+	0
+}
+
+
+fn builtin_help() -> i8 {
+	println!("Help:");
+	println!("help - Displays this screen");
+	println!("exit - Leaves this shell");
+	1
+}
+
+fn builtin_commands(args: &Vec<&str>) -> i8 {
+	match args[0] {
+		"help" => builtin_help(),
+		"exit" => builtin_exit(),
+		_ => -1,
+	}
+}
+
 fn shell_loop() {
-	loop {
+	let mut status = 1;
+	while status != 0 {
 		let line = read_line();
 		let args = split_line(&line);
-		let result = execute(&args);
+		status = execute(&args);
 	}
 }
 
 fn execute(args: &Vec<&str>) -> u8 {
 
-	if (args.len() == 0) {
+	if args.len() == 0 {
 		return 1;
+	}
+
+	let result = builtin_commands(&args);
+	if result != -1 {
+		return result as u8;
 	}
 
 	let output = Command::new(args[0])
